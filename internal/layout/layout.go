@@ -125,7 +125,7 @@ func rows(p ghostty.Palette, brand string) string {
 		cell(tokens.TitleWorking, working, false, false),
 		cell(tokens.TitleDone, p.Colors[2], false, false),
 		cell(tokens.TitleBlocked, p.Colors[1], false, false),
-		cell(tokens.TitleIdle, fg, false, false),
+		cell(tokens.TitleIdle, muted, false, false),
 		cell(tokens.TitleStale, muted, false, true),
 	}
 	return "[\n" +
@@ -166,7 +166,7 @@ func spaceRows(p ghostty.Palette) string {
 		r = append(r,
 			cell(tokens.SpaceTabDone(i), p.Colors[2], false, false),
 			cell(tokens.SpaceTabBlocked(i), p.Colors[1], false, false),
-			cell(tokens.SpaceTabIdle(i), fg, false, false),
+			cell(tokens.SpaceTabIdle(i), muted, false, false),
 		)
 		out = append(out, "  ["+strings.Join(r, ", ")+"]")
 	}

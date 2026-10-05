@@ -81,7 +81,7 @@ func TestAgentRowShape(t *testing.T) {
 	for _, w := range []string{
 		`{ token = "$gs_title_done", fg = "` + p.Colors[2] + `" }`,
 		`{ token = "$gs_title_blocked", fg = "` + p.Colors[1] + `" }`,
-		`{ token = "$gs_title_idle", fg = "` + p.Foreground + `" }`,
+		`{ token = "$gs_title_idle", fg = "` + Muted(p) + `" }`,
 		`{ token = "$gs_title_stale", fg = "` + Muted(p) + `", dim = true }`,
 	} {
 		if !strings.Contains(lines[1], w) {
