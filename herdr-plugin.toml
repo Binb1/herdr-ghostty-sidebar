@@ -1,0 +1,97 @@
+id = "binb1.ghostty-sidebar"
+name = "Ghostty Sidebar"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "Agents and Spaces sidebar with vendor logos and state colours, coloured from your Ghostty theme."
+platforms = ["macos", "linux"]
+
+# Download the prebuilt binary for this platform from the matching GitHub
+# Release. For a local checkout run: go build -o bin/herdr-ghostty-sidebar .
+[[build]]
+command = ["bash", "install.sh"]
+
+# After a server (re)start the pane tokens are gone, so report everything.
+[[startup]]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render --force"]
+
+[[actions]]
+id = "refresh"
+title = "Refresh Ghostty sidebar"
+contexts = ["global"]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render --force"]
+
+[[actions]]
+id = "setup"
+title = "Set up Ghostty sidebar (font, theme colours, layout)"
+contexts = ["global"]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" setup"]
+
+[[actions]]
+id = "uninstall"
+title = "Remove Ghostty sidebar setup"
+contexts = ["global"]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" uninstall"]
+
+[[events]]
+on = "pane.agent_detected"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "pane.agent_status_changed"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "pane.focused"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "pane.closed"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "pane.exited"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "pane.moved"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "tab.created"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "tab.moved"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "tab.closed"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "tab.renamed"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "tab.focused"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "workspace.created"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "workspace.renamed"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "workspace.closed"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "workspace.moved"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
+
+[[events]]
+on = "workspace.reordered"
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]
