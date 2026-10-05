@@ -9,7 +9,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 
+	"github.com/Binb1/herdr-ghostty-sidebar/internal/claude"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/herdr"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/render"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/setup"
@@ -23,6 +25,9 @@ const usage = `usage: herdr-ghostty-sidebar <command>
   animate            spin the working marks until nothing works (started by render)
   setup              install font, Ghostty mapping and Herdr layout block
   uninstall          remove everything setup wrote and clear all tokens
+  claude-hook        Claude Code hook: show the subagent line (reads hook JSON on stdin)
+  claude-install     register the hook in ~/.claude/settings.json
+  claude-uninstall   remove it again
   version            print the version
 
 setup/uninstall/render accept --dry-run (setup only), --herdr-config,
@@ -41,6 +46,15 @@ func main() {
 }
 
 func run(cmd string, args []string) error {
+	switch cmd {
+	case "claude-hook":
+		claudeHook() // never fails, never prints
+		return nil
+	case "claude-install":
+		return claude.Install(claude.Paths{PluginRoot: pluginRoot()})
+	case "claude-uninstall":
+		return claude.Uninstall(claude.Paths{PluginRoot: pluginRoot()})
+	}
 	fs := flag.NewFlagSet(cmd, flag.ContinueOnError)
 	opts := setup.Options{
 		HerdrConfig: os.Getenv("HERDR_CONFIG_PATH"),
@@ -91,7 +105,9 @@ func run(cmd string, args []string) error {
 		if err != nil {
 			return err
 		}
-		return render.Animate(client, stateDir(), render.AnimateOpts{})
+		return render.Animate(client, stateDir(), render.AnimateOpts{Sync: func() {
+			_, _ = setup.SyncLayout(opts) // no-op unless appearance/theme changed
+		}})
 	case "setup":
 		return setup.Setup(opts)
 	default: // uninstall
@@ -107,6 +123,37 @@ func run(cmd string, args []string) error {
 		}
 		return render.ClearAll(client, stateDir())
 	}
+}
+
+// claudeHook handles one Claude Code hook event. Hook output is shown to the
+// user by Claude Code, so every error is swallowed.
+func claudeHook() {
+	if os.Getenv("HERDR_ENV") != "1" || os.Getenv("HERDR_PANE_ID") == "" {
+		return
+	}
+	client, err := herdr.NewClient()
+	if err != nil {
+		return
+	}
+	client.Timeout = 2 * time.Second
+	_ = claude.Handle(os.Stdin, claude.Env{
+		HerdrEnv: os.Getenv("HERDR_ENV"),
+		PaneID:   os.Getenv("HERDR_PANE_ID"),
+		StateDir: hookStateDir(),
+		Now:      time.Now(),
+	}, client)
+}
+
+// hookStateDir is stable without HERDR_PLUGIN_STATE_DIR, which Claude Code
+// hooks do not get.
+func hookStateDir() string {
+	if d := os.Getenv("XDG_STATE_HOME"); d != "" {
+		return filepath.Join(d, "herdr-ghostty-sidebar")
+	}
+	if h, err := os.UserHomeDir(); err == nil {
+		return filepath.Join(h, ".local", "state", "herdr-ghostty-sidebar")
+	}
+	return stateDir()
 }
 
 // spawnAnimate starts "animate" in its own session with stdio detached and

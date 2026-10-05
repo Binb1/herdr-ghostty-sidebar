@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Binb1/herdr-ghostty-sidebar/internal/gitbranch"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/herdr"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/tokens"
 )
@@ -201,10 +202,19 @@ func RunWorking(api API, stateDir string, force bool) (bool, error) {
 	t := now()
 	seenPath := filepath.Join(stateDir, "seen.json")
 	seenMap := updateSeen(loadSeen(seenPath), snap.Agents, t)
-	res := Compute(snap, func(id string) bool {
+	holdPath := filepath.Join(stateDir, "hold.json")
+	holdMap := updateHold(loadHold(holdPath), snap)
+	branches := gitbranch.NewReader()
+	res := ComputeWith(applyHold(snap, holdMap), Inputs{Stale: func(id string) bool {
 		s, ok := seenMap[id]
 		return ok && t.Sub(time.Unix(s.At, 0)) >= StaleAfter
-	}, tokens.FrameAt(t))
+	}, Branch: func(a herdr.Agent) string {
+		dir := a.ForegroundCwd
+		if dir == "" {
+			dir = a.Cwd
+		}
+		return branches.Branch(dir)
+	}}, tokens.FrameAt(t))
 	desired, order := res.Panes, res.PaneOrder
 	cachePath := filepath.Join(stateDir, "tokens.json")
 	cache := loadCache(cachePath)
@@ -293,6 +303,9 @@ func RunWorking(api API, stateDir string, force bool) (bool, error) {
 	if err := saveJSON(seenPath, seenMap); err != nil {
 		errs = append(errs, err)
 	}
+	if err := saveJSON(holdPath, holdMap); err != nil {
+		errs = append(errs, err)
+	}
 	return anyWorking(snap), errors.Join(errs...)
 }
 
@@ -332,6 +345,7 @@ func ClearAll(api API, stateDir string) error {
 	}
 	_ = os.Remove(filepath.Join(stateDir, "tokens.json"))
 	_ = os.Remove(filepath.Join(stateDir, "seen.json"))
+	_ = os.Remove(filepath.Join(stateDir, "hold.json"))
 	return errors.Join(errs...)
 }
 

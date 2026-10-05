@@ -32,6 +32,18 @@ title = "Remove Ghostty sidebar setup"
 contexts = ["global"]
 command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" uninstall"]
 
+[[actions]]
+id = "claude-install"
+title = "Show Claude Code subagents in the sidebar (adds hooks to ~/.claude)"
+contexts = ["global"]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" claude-install"]
+
+[[actions]]
+id = "claude-uninstall"
+title = "Remove the Claude Code subagent hooks"
+contexts = ["global"]
+command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" claude-uninstall"]
+
 [[events]]
 on = "pane.agent_detected"
 command = ["sh", "-c", "exec \"$HERDR_PLUGIN_ROOT/bin/herdr-ghostty-sidebar\" render"]

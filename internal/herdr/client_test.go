@@ -165,3 +165,15 @@ func TestReportWorkspaceTokens(t *testing.T) {
 		t.Fatalf("tokens = %v", tk)
 	}
 }
+
+func TestReportPaneTokensTTL(t *testing.T) {
+	f := newFake(t, func(req map[string]any) string { return `{"id":"x","result":{}}` })
+	c := &Client{SocketPath: f.path}
+	v := "x"
+	if err := c.ReportPaneTokensTTL("p", "s", map[string]*string{"a": &v}, 15*time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	if got := f.reqs[0]["params"].(map[string]any)["ttl_ms"]; got != float64(900000) {
+		t.Fatalf("ttl_ms = %v", got)
+	}
+}

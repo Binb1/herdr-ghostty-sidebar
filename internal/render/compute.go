@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Binb1/herdr-ghostty-sidebar/internal/gitbranch"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/herdr"
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/tokens"
 )
@@ -18,7 +19,7 @@ const (
 	// Herdr trims leading whitespace off token values (even NBSP). A
 	// zero-width space is a format character, not whitespace, so it survives
 	// the trim and protects the spaces after it.
-	indent = "​  "
+	indent = tokens.IndentPrefix
 	corner = "└"
 )
 
@@ -64,6 +65,18 @@ type Result struct {
 // index frame (tokens.FrameAt). stale reports whether an idle agent
 // pane has been untouched for long enough to dim.
 func Compute(snap *herdr.Snapshot, stale func(paneID string) bool, frame int) *Result {
+	return ComputeWith(snap, Inputs{Stale: stale}, frame)
+}
+
+// Inputs are the optional extras Compute draws on.
+type Inputs struct {
+	Stale  func(paneID string) bool   // long-idle test; nil means never
+	Branch func(a herdr.Agent) string // git branch of an agent's repo; nil means none
+}
+
+// ComputeWith is Compute with the optional inputs.
+func ComputeWith(snap *herdr.Snapshot, in Inputs, frame int) *Result {
+	stale := in.Stale
 	mark := tokens.Frame(frame)
 	if stale == nil {
 		stale = func(string) bool { return false }
@@ -195,6 +208,11 @@ func Compute(snap *herdr.Snapshot, stale func(paneID string) bool, frame int) *R
 			set(v, tokens.TitleStale, title)
 		default:
 			set(v, tokens.TitleIdle, title)
+		}
+		if in.Branch != nil {
+			if b := in.Branch(a); !gitbranch.Hidden(b) {
+				set(v, tokens.Branch, tokens.Indent("⎇ "+b))
+			}
 		}
 		res.Panes[a.PaneID] = v
 		res.PaneOrder = append(res.PaneOrder, a.PaneID)

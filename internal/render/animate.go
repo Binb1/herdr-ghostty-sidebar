@@ -18,6 +18,10 @@ type AnimateOpts struct {
 	MaxRun    time.Duration // hard cap (6h)
 	MaxErrors int           // consecutive failed ticks before giving up (5)
 	Sleep     func(time.Duration)
+	// Sync, when set, runs every SyncEvery (default 2s) while the loop
+	// ticks: it re-applies the layout when the appearance or theme changed.
+	Sync      func()
+	SyncEvery time.Duration
 	Now       func() time.Time
 }
 
@@ -33,6 +37,9 @@ func (o *AnimateOpts) defaults() {
 	}
 	if o.MaxErrors <= 0 {
 		o.MaxErrors = 5
+	}
+	if o.SyncEvery <= 0 {
+		o.SyncEvery = 2 * time.Second
 	}
 	if o.Sleep == nil {
 		o.Sleep = time.Sleep
@@ -99,14 +106,19 @@ func AnimateLoop(api API, stateDir string, o AnimateOpts) error {
 	start := o.Now()
 	lastWorking := start
 	fails := 0
+	lastSync := start
 	for {
 		now := o.Now()
+		if o.Sync != nil && now.Sub(lastSync) >= o.SyncEvery {
+			lastSync = now
+			o.Sync()
+		}
 		if now.Sub(start) >= o.MaxRun {
 			return nil
 		}
 		unlock, ok, err := TryLock(stateDir, "render.lock")
 		if err == nil && ok {
-			working, terr := tick(api, now)
+			working, terr := tick(api, stateDir, now)
 			unlock()
 			err = terr
 			if terr == nil && working {
@@ -129,12 +141,12 @@ func AnimateLoop(api API, stateDir string, o AnimateOpts) error {
 }
 
 // tick reports one frame. It returns whether any agent is working.
-func tick(api API, t time.Time) (bool, error) {
+func tick(api API, stateDir string, t time.Time) (bool, error) {
 	snap, err := api.Snapshot()
 	if err != nil {
 		return false, err
 	}
-	res := Compute(snap, nil, tokens.FrameAt(t))
+	res := Compute(applyHold(snap, loadHold(filepath.Join(stateDir, "hold.json"))), nil, tokens.FrameAt(t))
 	var firstErr error
 	send := func(id string, v Values, names []string, report func(string, string, map[string]*string) error) {
 		p := map[string]*string{}

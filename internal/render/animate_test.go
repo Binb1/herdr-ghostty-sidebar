@@ -198,3 +198,21 @@ func TestRunWorking(t *testing.T) {
 		t.Fatalf("w=%v err=%v", w, err)
 	}
 }
+
+func TestAnimateSyncsLayoutEveryTwoSeconds(t *testing.T) {
+	c := newClock()
+	api := &loopAPI{snaps: func(n int) (*herdr.Snapshot, error) {
+		s := fixture() // always working: runs until the hard cap
+		return s, nil
+	}}
+	o := c.opts()
+	o.MaxRun = 10*time.Second + time.Millisecond
+	syncs := 0
+	o.Sync = func() { syncs++ }
+	if err := AnimateLoop(api, t.TempDir(), o); err != nil {
+		t.Fatal(err)
+	}
+	if syncs != 5 {
+		t.Fatalf("syncs = %d over 10s, want 5", syncs)
+	}
+}

@@ -53,6 +53,22 @@ Herdr puts ` · ` between non-empty cells, so rows use as few cells as possible.
 
 The plugin reports pane tokens `gs_group`, `gs_group_stale`, `gs_split`, `gs_logo`, `gs_logo_stale`, `gs_title_{working,done,blocked,idle,stale}` and workspace tokens `gs_sp_*`, `gs_t<N>_*` (source `binb1.ghostty-sidebar`). Tokens from earlier versions (`gs_ws`, `gs_tab`, `gs_title`, `gs_working`, `gs_blocked`, `gs_done`, `gs_idle`) are cleared on the next render. The "idle for two hours" clock starts when the plugin first sees an agent in its current state.
 
+## Claude Code subagent line
+
+While Claude Code runs subagents (the `Task`/`Agent` tool), the agent's row gets an extra muted line under it: `└ ✳ <subagent description>`, with ` +N` when several run in parallel. It disappears when the last subagent stops, when Claude stops or the session ends (and after 15 minutes at most).
+
+```sh
+herdr plugin action invoke claude-install --plugin binb1.ghostty-sidebar
+```
+
+This writes `~/.claude/hooks/herdr-ghostty-sidebar.sh` (a wrapper that runs `bin/herdr-ghostty-sidebar claude-hook`) and adds it to `~/.claude/settings.json` for `PreToolUse` (matcher `Task|Agent`), `SubagentStop`, `Stop` and `SessionEnd`. Your other hooks and settings are kept as they are (the file is re-indented with 2 spaces) and the original is backed up once to `settings.json.bak-ghostty-sidebar`. Re-run it after updating the plugin to refresh the wrapper. The hook only acts inside Herdr panes and never prints or fails. Its small per-pane state lives in `$XDG_STATE_HOME/herdr-ghostty-sidebar` (default `~/.local/state/herdr-ghostty-sidebar`).
+
+```sh
+herdr plugin action invoke claude-uninstall --plugin binb1.ghostty-sidebar
+```
+
+removes only those entries and the wrapper.
+
 ## Colours
 
 The theme comes from `theme =` in your Ghostty config (`light:A,dark:B` or a single name), looked up in `~/.config/ghostty/themes`, then Ghostty's bundled themes. `palette`, `foreground` and `background` lines in your main config override the theme.

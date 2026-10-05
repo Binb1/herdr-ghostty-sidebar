@@ -133,27 +133,38 @@ func (c *Client) Snapshot() (*Snapshot, error) {
 // A nil value clears the token. At most 16 keys per call; longer patches are
 // split.
 func (c *Client) ReportPaneTokens(paneID, source string, tokens map[string]*string) error {
-	return c.report("pane.report_metadata", "pane_id", paneID, source, tokens)
+	return c.report("pane.report_metadata", "pane_id", paneID, source, tokens, 0)
+}
+
+// ReportPaneTokensTTL is ReportPaneTokens with ttl_ms set, so Herdr drops the
+// tokens by itself after ttl if nothing refreshes or clears them. The patch
+// must fit in one call (at most 16 keys); ttl is capped at 24h by Herdr.
+func (c *Client) ReportPaneTokensTTL(paneID, source string, tokens map[string]*string, ttl time.Duration) error {
+	return c.report("pane.report_metadata", "pane_id", paneID, source, tokens, ttl)
 }
 
 // ReportWorkspaceTokens is ReportPaneTokens for a workspace
 // (workspace.report_metadata).
 func (c *Client) ReportWorkspaceTokens(workspaceID, source string, tokens map[string]*string) error {
-	return c.report("workspace.report_metadata", "workspace_id", workspaceID, source, tokens)
+	return c.report("workspace.report_metadata", "workspace_id", workspaceID, source, tokens, 0)
 }
 
-func (c *Client) report(method, idKey, id, source string, tokens map[string]*string) error {
+func (c *Client) report(method, idKey, id, source string, tokens map[string]*string, ttl time.Duration) error {
 	const maxKeys = 16
 	batch := map[string]*string{}
 	flush := func() error {
 		if len(batch) == 0 {
 			return nil
 		}
-		err := c.Call(method, map[string]any{
+		params := map[string]any{
 			idKey:    id,
 			"source": source,
 			"tokens": batch,
-		}, nil)
+		}
+		if ttl > 0 {
+			params["ttl_ms"] = ttl.Milliseconds()
+		}
+		err := c.Call(method, params, nil)
 		batch = map[string]*string{}
 		return err
 	}

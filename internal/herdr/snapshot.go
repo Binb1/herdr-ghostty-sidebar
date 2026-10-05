@@ -6,6 +6,8 @@ type Snapshot struct {
 	Tabs       []Tab       `json:"tabs"`
 	Panes      []Pane      `json:"panes"`
 	Agents     []Agent     `json:"agents"`
+
+	FocusedPaneID string `json:"focused_pane_id"`
 }
 
 type Workspace struct {
@@ -40,6 +42,9 @@ type Agent struct {
 	Status                string            `json:"agent_status"`
 	TerminalTitle         string            `json:"terminal_title"`
 	TerminalTitleStripped string            `json:"terminal_title_stripped"`
+	Cwd                   string            `json:"cwd"`
+	ForegroundCwd         string            `json:"foreground_cwd"`
+	Focused               bool              `json:"focused"`
 	StateChangeSeq        uint64            `json:"state_change_seq"`
 	Tokens                map[string]string `json:"tokens"`
 }

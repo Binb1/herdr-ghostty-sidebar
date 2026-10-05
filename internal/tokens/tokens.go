@@ -25,6 +25,7 @@ const (
 	Group      = "gs_group"       // workspace label; only on the first agent of a workspace
 	GroupStale = "gs_group_stale" // same, when every agent in the workspace is long idle
 	Split      = "gs_split"       // indented "└"; second and later agent in a tab
+	Branch     = "gs_branch"      // indented "⎇ branch"; own row under the agent row
 	Logo       = "gs_logo"        // agent logo glyph (font codepoint) or text fallback
 	LogoStale  = "gs_logo_stale"  // same glyph for a long-idle agent (dimmed)
 
@@ -35,9 +36,25 @@ const (
 	TitleStale   = "gs_title_stale"   // "title", dimmed
 )
 
+// Claude Code subagent line, reported by the `claude-hook` subcommand (not
+// by render) under its own source, so render's diff and clearing never touch
+// it. Value: "└ ✳ <description>"; the layout indents and mutes it.
+const (
+	WorkerSource = Source + ".claude"
+	Worker       = "gs_worker"
+)
+
+// IndentPrefix is the zero-width space plus two spaces that indents a token
+// value. Herdr trims leading whitespace off values, but a zero-width space is
+// a format character, so it survives and protects the spaces after it.
+const IndentPrefix = "\u200b  "
+
+// Indent prefixes s with IndentPrefix.
+func Indent(s string) string { return IndentPrefix + s }
+
 // PaneTokens lists every pane token in display order.
 var PaneTokens = []string{
-	Group, GroupStale, Split, Logo, LogoStale,
+	Group, GroupStale, Split, Branch, Logo, LogoStale,
 	TitleWorking, TitleDone, TitleBlocked, TitleIdle, TitleStale,
 }
 

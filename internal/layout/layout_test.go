@@ -66,8 +66,17 @@ func rowLines(block string) []string {
 func TestAgentRowShape(t *testing.T) {
 	r := rows(pal(), "#D97757")
 	lines := rowLines(r)
-	if len(lines) != 2 {
-		t.Fatalf("want header + agent row, got %d:\n%s", len(lines), r)
+	if len(lines) != 4 {
+		t.Fatalf("want header, agent, branch and worker rows, got %d:\n%s", len(lines), r)
+	}
+	if got := strings.Join(tokensOf(lines[2]), ","); got != "gs_branch" {
+		t.Errorf("branch row: %s", got)
+	}
+	if got := strings.Join(tokensOf(lines[3]), ","); got != "gs_worker" {
+		t.Errorf("worker row: %s", got)
+	}
+	if !strings.Contains(lines[2], `fg = "`+pal().Colors[4]+`"`) || !strings.Contains(lines[3], "dim = true") {
+		t.Errorf("branch/worker colours: %s %s", lines[2], lines[3])
 	}
 	if got := strings.Join(tokensOf(lines[0]), ","); got != "gs_group,gs_group_stale" {
 		t.Errorf("header row: %s", got)
@@ -216,5 +225,16 @@ func TestCheckHerdr(t *testing.T) {
 	w, _ = CheckHerdr("")
 	if len(w) != 1 {
 		t.Error("missing sort should warn")
+	}
+}
+
+func TestBranchAndWorkerRowsEverywhere(t *testing.T) {
+	b := HerdrBlock(pal(), []string{"claude", "codex"})
+	// default rows + one rows_by_agent entry per accepted agent
+	if n := strings.Count(b, `"$gs_branch"`); n != 3 {
+		t.Errorf("branch row count %d, want 3", n)
+	}
+	if n := strings.Count(b, `"$gs_worker"`); n != 3 {
+		t.Errorf("worker row count %d, want 3", n)
 	}
 }
