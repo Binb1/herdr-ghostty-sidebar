@@ -17,7 +17,7 @@ import (
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/setup"
 )
 
-var version = "0.1.0"
+var version = "0.1.1"
 
 const usage = `usage: herdr-ghostty-sidebar <command>
 
