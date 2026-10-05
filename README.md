@@ -61,7 +61,7 @@ While Claude Code runs subagents (the `Task`/`Agent` tool), the agent's row gets
 herdr plugin action invoke claude-install --plugin binb1.ghostty-sidebar
 ```
 
-This writes `~/.claude/hooks/herdr-ghostty-sidebar.sh` (a wrapper that runs `bin/herdr-ghostty-sidebar claude-hook`) and adds it to `~/.claude/settings.json` for `PreToolUse` (matcher `Task|Agent`), `SubagentStop`, `Stop` and `SessionEnd`. Your other hooks and settings are kept as they are (the file is re-indented with 2 spaces) and the original is backed up once to `settings.json.bak-ghostty-sidebar`. Re-run it after updating the plugin to refresh the wrapper. The hook only acts inside Herdr panes and never prints or fails. Its small per-pane state lives in `$XDG_STATE_HOME/herdr-ghostty-sidebar` (default `~/.local/state/herdr-ghostty-sidebar`).
+This writes `~/.claude/hooks/herdr-ghostty-sidebar.sh` (a wrapper that runs `bin/herdr-ghostty-sidebar claude-hook`) and adds it to `~/.claude/settings.json` for `PreToolUse` (matcher `Task|Agent`), `SubagentStop`, `Stop` and `SessionEnd`. Your other hooks and settings are kept as they are (the file is re-indented with 2 spaces) and the original is backed up once to `settings.json.bak-ghostty-sidebar`. It is a one-time step: after a plugin update the plugin repoints the wrapper itself. The hook only acts inside Herdr panes and never prints or fails. Its small per-pane state lives in `$XDG_STATE_HOME/herdr-ghostty-sidebar` (default `~/.local/state/herdr-ghostty-sidebar`).
 
 ```sh
 herdr plugin action invoke claude-uninstall --plugin binb1.ghostty-sidebar

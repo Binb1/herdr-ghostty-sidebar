@@ -234,3 +234,28 @@ func TestInstallUninstallFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestRefreshScriptFollowsPluginRoot(t *testing.T) {
+	home := t.TempDir()
+	// Not installed: nothing written.
+	if changed, err := RefreshScript(Paths{Home: home, PluginRoot: "/new"}); err != nil || changed {
+		t.Fatalf("not installed: changed=%v err=%v", changed, err)
+	}
+	if _, err := os.Stat(Paths{Home: home}.script()); !os.IsNotExist(err) {
+		t.Fatalf("script created without install: %v", err)
+	}
+	if err := Install(Paths{Home: home, PluginRoot: "/old"}); err != nil {
+		t.Fatal(err)
+	}
+	p := Paths{Home: home, PluginRoot: "/new"}
+	if changed, err := RefreshScript(p); err != nil || !changed {
+		t.Fatalf("stale root: changed=%v err=%v", changed, err)
+	}
+	got, _ := os.ReadFile(p.script())
+	if string(got) != scriptBody("/new") {
+		t.Fatalf("script not refreshed:\n%s", got)
+	}
+	if changed, _ := RefreshScript(p); changed {
+		t.Fatal("current script rewritten")
+	}
+}

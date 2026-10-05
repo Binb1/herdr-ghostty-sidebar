@@ -1,6 +1,6 @@
 id = "binb1.ghostty-sidebar"
 name = "Ghostty Sidebar"
-version = "0.1.1"
+version = "0.1.2"
 min_herdr_version = "0.9.0"
 description = "Agents and Spaces sidebar with vendor logos and state colours, coloured from your Ghostty theme."
 platforms = ["macos", "linux"]

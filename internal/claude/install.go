@@ -44,7 +44,7 @@ func shq(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'
 
 func scriptBody(root string) string {
 	return "#!/bin/sh\n" +
-		"# managed by herdr-ghostty-sidebar (claude-install); re-run it to refresh.\n" +
+		"# managed by herdr-ghostty-sidebar (claude-install); the plugin keeps the path current.\n" +
 		"bin=" + shq(filepath.Join(root, "bin", "herdr-ghostty-sidebar")) + "\n" +
 		"[ -x \"$bin\" ] || exit 0\n" +
 		"exec \"$bin\" claude-hook\n"
@@ -78,6 +78,27 @@ func Install(p Paths) error {
 		return err
 	}
 	return writeAtomic(p.settings(), updated, 0o644)
+}
+
+// RefreshScript points an installed wrapper script at the current plugin
+// root, so a plugin update or reinstall never needs claude-install again.
+// It does nothing when the hook isn't installed (no script) or is current.
+func RefreshScript(p Paths) (changed bool, err error) {
+	if p.PluginRoot == "" {
+		return false, nil
+	}
+	cur, err := os.ReadFile(p.script())
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	want := scriptBody(p.PluginRoot)
+	if string(cur) == want {
+		return false, nil
+	}
+	return true, writeAtomic(p.script(), want, 0o755)
 }
 
 // Uninstall removes our settings entries and the wrapper script.

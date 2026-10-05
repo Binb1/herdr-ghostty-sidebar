@@ -17,7 +17,7 @@ import (
 	"github.com/Binb1/herdr-ghostty-sidebar/internal/setup"
 )
 
-var version = "0.1.1"
+var version = "0.1.2"
 
 const usage = `usage: herdr-ghostty-sidebar <command>
 
@@ -88,6 +88,9 @@ func run(cmd string, args []string) error {
 	case "render":
 		if _, err := setup.SyncLayout(opts); err != nil {
 			fmt.Fprintf(os.Stderr, "herdr-ghostty-sidebar: layout sync: %v\n", err)
+		}
+		if _, err := claude.RefreshScript(claude.Paths{PluginRoot: opts.PluginRoot}); err != nil {
+			fmt.Fprintf(os.Stderr, "herdr-ghostty-sidebar: claude hook refresh: %v\n", err)
 		}
 		client, err := herdr.NewClient()
 		if err != nil {
