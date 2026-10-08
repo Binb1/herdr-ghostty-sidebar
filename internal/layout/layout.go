@@ -109,7 +109,7 @@ func Muted(p ghostty.Palette) string { return Mix(p.Foreground, p.Background, 0.
 // rows renders the Agents rows for a brand colour: the workspace header
 // (bold, muted; empty and so hidden except on a workspace's first agent), the
 // agent row, `[corner] · logo · title`, then a git branch row (blue, palette
-// 4) and a Claude subagent row (muted, dim), both empty and so hidden unless
+// 4; muted while the agent is idle) and a Claude subagent row (muted, dim), both empty and so hidden unless
 // set. Exactly one title token is set,
 // so mark and title are one cell, coloured by state.
 func rows(p ghostty.Palette, brand string) string {
@@ -133,7 +133,7 @@ func rows(p ghostty.Palette, brand string) string {
 	return "[\n" +
 		"  [" + cell(tokens.Group, muted, true, false) + ", " + cell(tokens.GroupStale, muted, true, true) + "],\n" +
 		"  [" + strings.Join(row2, ", ") + "],\n" +
-		"  [" + cell(tokens.Branch, p.Colors[4], false, false) + "],\n" +
+		"  [" + cell(tokens.Branch, p.Colors[4], false, false) + ", " + cell(tokens.BranchIdle, muted, false, false) + "],\n" +
 		"  [" + cell(tokens.Worker, muted, false, true) + "],\n]"
 }
 

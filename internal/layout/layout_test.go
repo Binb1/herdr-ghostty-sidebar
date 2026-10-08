@@ -69,7 +69,7 @@ func TestAgentRowShape(t *testing.T) {
 	if len(lines) != 4 {
 		t.Fatalf("want header, agent, branch and worker rows, got %d:\n%s", len(lines), r)
 	}
-	if got := strings.Join(tokensOf(lines[2]), ","); got != "gs_branch" {
+	if got := strings.Join(tokensOf(lines[2]), ","); got != "gs_branch,gs_branch_idle" {
 		t.Errorf("branch row: %s", got)
 	}
 	if got := strings.Join(tokensOf(lines[3]), ","); got != "gs_worker" {

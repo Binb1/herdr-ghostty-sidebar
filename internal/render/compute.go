@@ -211,7 +211,11 @@ func ComputeWith(snap *herdr.Snapshot, in Inputs, frame int) *Result {
 		}
 		if in.Branch != nil {
 			if b := in.Branch(a); !gitbranch.Hidden(b) {
-				set(v, tokens.Branch, tokens.Indent("⎇ "+b))
+				tok := tokens.Branch
+				if paint == stIdle || paint == stStale {
+					tok = tokens.BranchIdle
+				}
+				set(v, tok, tokens.Indent("⎇ "+b))
 			}
 		}
 		res.Panes[a.PaneID] = v
