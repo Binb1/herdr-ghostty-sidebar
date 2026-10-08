@@ -26,6 +26,7 @@ const (
 	GroupStale = "gs_group_stale" // same, when every agent in the workspace is long idle
 	Split      = "gs_split"       // indented "└"; second and later agent in a tab
 	Branch     = "gs_branch"      // indented "⎇ branch"; own row under the agent row
+	BranchIdle = "gs_branch_idle" // same, muted, for an idle or long-idle agent
 	Logo       = "gs_logo"        // agent logo glyph (font codepoint) or text fallback
 	LogoStale  = "gs_logo_stale"  // same glyph for a long-idle agent (dimmed)
 
@@ -54,7 +55,7 @@ func Indent(s string) string { return IndentPrefix + s }
 
 // PaneTokens lists every pane token in display order.
 var PaneTokens = []string{
-	Group, GroupStale, Split, Branch, Logo, LogoStale,
+	Group, GroupStale, Split, Branch, BranchIdle, Logo, LogoStale,
 	TitleWorking, TitleDone, TitleBlocked, TitleIdle, TitleStale,
 }
 

@@ -178,7 +178,8 @@ func TestRunReportsBranchFromCwd(t *testing.T) {
 		t.Fatal(err)
 	}
 	p := api.reports["w1:p1"]
-	if len(p) != 1 || p[0][tokens.Branch] == nil || *p[0][tokens.Branch] != "​  ⎇ topic" {
+	// An idle agent's branch goes in the muted token.
+	if len(p) != 1 || p[0][tokens.Branch] != nil || p[0][tokens.BranchIdle] == nil || *p[0][tokens.BranchIdle] != "​  ⎇ topic" {
 		t.Fatalf("%v", p)
 	}
 }
